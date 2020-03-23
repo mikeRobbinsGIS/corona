@@ -169,7 +169,7 @@ the powerplants and the current html are in the same directory, this is calling 
         let highRecoverRate = indexOfMax(countryRecover)
         
         
-        document.getElementById("MostCases").innerHTML = corona.features[mostCases].properties['Country/Region']
+        document.getElementById("MostCases").innerHTML = corona.features[mostCases].properties['Province/State']
         document.getElementById("MostCasesNum").innerHTML = numberWithCommas(corona.features[mostCases].properties['number_of_cases'])
         
         document.getElementById("highDeathRate").innerHTML = corona.features[highDeathRate].properties['Country/Region']
