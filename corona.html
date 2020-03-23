@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>COVID-19 Visualization</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+        header {
+            padding: 6px 10%;
+        }
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #001323;
+        }
+        h2 {
+            display: inline-block;
+            color: #001323;
+        }
+        #map {
+            width: 80%;
+            height: 540px;
+            margin: 10px auto;
+        }
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+        }
+        p {
+            font-size: 1em;
+            color: #001323;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Corona Virus</h1>
+        <h2>Cases, Deaths, and Recoveries</h2>
+    </header>
+
+    <div id='map'></div>
+
+    <footer>
+        <p>The most COVID-19 cases are in <span id='MostCases'></span> with <span id='MostCasesNum'></span><br><br>For countries with 200+ cases<br><br>The highest death rate is in <span id='highDeathRate'></span> (<span id='dRnum'></span>%)<br>The highest recovery rate is in <span id = 'highRecoverRate'></span> (<span id = 'rRnum'></span> %)</p>
+    </footer>
+<!-- 
+the powerplants and the current html are in the same directory, this is calling just the .js file via script tags. akin to importing into the current script
+-->
+    <script src="output.json"></script>
+    <script>
+//this is the map and it is centered on the United States with a zoom of 4
+      var map = L.map('map', {
+          center: [0,0],
+          zoom: 2,
+      });
+//loading the map tiles with a zoom      
+      var tiles = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+          subdomains: 'abcd',
+          maxZoom: 19
+      });  
+//adding the maptiles to the map      
+      tiles.addTo(map);
+        
+    
+    
+//rading the variable "plants" from the geojson    
+      
+        L.geoJson(corona, {
+            //uses point to layer option to read the json, creating a function that imputs each feature and the associated lat long to put points of the power plants on the map, from the literature the function knows how to read a coordinats from the geojson        
+            pointToLayer: function(feature,latlng) {
+                //console logs the whole geojson object's properties for each object              
+                console.log(feature.properties)
+                //creates a circle marker for all the points in the geojson from the latlng           
+                return L.circleMarker(latlng, {
+                    //the circle outlines are set to orang
+                    color: 'orange',
+                    //the outlines have a weight of 2  
+                    weight: 2,
+                    //the fill color is yellow
+                    fillColor: 'yellow',
+                    //the fill opacity is .5 
+                    fillOpacity: .5,
+                    //the size of the radius is proportional to the megawat capacity found in the jeogson
+                    radius: getRadius(feature.properties.number_of_cases) //step4
+                });
+            },
+            
+            //step 5
+            //with the mouseover turns the circle from yellow to red. 
+            onEachFeature : function(feature,layer) {
+                //when the mouse hovers over a circle the event mouseover occurs    
+                layer.on('mouseover', function() {
+                    //changes the color to red
+                    layer.setStyle({
+                        fillColor: 'red'
+                    });
+                });
+                //this changes the color back to yellow on the event mouseout, 
+                layer.on('mouseout', function() {
+                    layer.setStyle({
+                        //for the color to go back to the original color, you must match the color to the L.circlemarke
+                        fillColor: 'yellow'
+                    });
+                });
+                //step 6  
+                //extracting variables via dot notation to call in the pop up below
+                //this is calling the name
+                if (feature.properties['Province/State'] == undefined) {
+                    var name = feature.properties['Country/Region']
+                }
+                else if (feature.properties['Country/Region'] != 'US') {
+                    var name = `${feature.properties['Province/State']},<br>${feature.properties['Country/Region']}`
+                }
+                else {
+                    var name = feature.properties['Province/State']
+                }
+                
+                //this is calling the capacity and changing it to a string to be able to treat it as a string
+                var cases = feature.properties['number_of_cases']
+                //this is calling the fuel type from the geojson
+                var deaths = feature.properties['number_of_deaths']
+                
+                var recover = feature.properties['number_of_recovered']
+                //this is creating the pop up where the name is the first line, the capacity as a string is a second line with the units "MW" added to the layer 
+                var popup = ("<b>"+numberWithCommas(name)+"</b><br>"+numberWithCommas(cases)+ " cases" + "<br>" + numberWithCommas(deaths) + "  deaths <br>" + numberWithCommas(recover) + " recovered")
+                layer.bindPopup(popup)
+            }
+                  
+            //adding it to the map
+        }).addTo(map);
+        
+        map.attributionControl.addAttribution('COVID data - <a href="https://disasterresponse.maps.arcgis.com/">ESRI</a>');
+
+        
+        let countryCases = []
+        let countryDeathRate = []
+        let countryRecover =[]
+        for (i=0; corona.features.length > i; i++) {
+            countryCases.push(corona.features[i].properties.number_of_cases);
+           if (corona.features[i].properties.number_of_cases < 200) {
+               countryDeathRate.push(0)
+           } else {
+               countryDeathRate.push(corona.features[i].properties.number_of_deaths/corona.features[i].properties.number_of_cases);
+           }
+           if (corona.features[i].properties.number_of_cases < 200) {
+               countryRecover.push(0)
+           } else {
+               countryRecover.push(corona.features[i].properties.number_of_recovered/corona.features[i].properties.number_of_cases);
+           }
+        }
+        
+        let mostCases = indexOfMax(countryCases)
+        let highDeathRate = indexOfMax(countryDeathRate)
+        let highRecoverRate = indexOfMax(countryRecover)
+        
+        
+        document.getElementById("MostCases").innerHTML = corona.features[mostCases].properties['Country/Region']
+        document.getElementById("MostCasesNum").innerHTML = numberWithCommas(corona.features[mostCases].properties['number_of_cases'])
+        
+        document.getElementById("highDeathRate").innerHTML = corona.features[highDeathRate].properties['Country/Region']
+        document.getElementById("dRnum").innerHTML = (countryDeathRate[highDeathRate]*100).toFixed(2)
+        
+        document.getElementById("highRecoverRate").innerHTML = corona.features[highRecoverRate].properties['Province/State']
+        document.getElementById("rRnum").innerHTML = (countryRecover[highRecoverRate]*100).toFixed(2)
+
+
+        //this function is  pulling the infromation from the pointToLayer option. to get the area of the circle radius       
+        function getRadius(amount){
+            //a mathmatical equation for radius
+            var radius = Math.sqrt(amount/Math.PI);
+            //returning the radius by utilizing the area of the circile formual above
+            return radius *.6 
+        }
+        
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        function indexOfMax(arr) {
+            if (arr.length === 0) {
+                return -1;
+            }
+            var max = arr[0];
+            var maxIndex = 0;
+            for (var i = 1; i < arr.length; i++) {
+                if (arr[i] > max) {
+                    maxIndex = i;
+                    max = arr[i];
+                }
+            }
+            return maxIndex;
+        }
+          
+    </script>
+    
+</body>
+
+</html>
