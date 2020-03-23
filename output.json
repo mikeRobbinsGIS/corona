@@ -1,4 +1,4 @@
-let corona = {
+{
 "type": "FeatureCollection",
 "features": [
 { "type": "Feature", "properties": { "Country\/Region": "Afghanistan", "Lat": 33.0, "Long": 65.0, "date": "2020-03-22", "number_of_cases": 40, "number_of_deaths": 1, "number_of_recovered": 1 }, "geometry": { "type": "Point", "coordinates": [ 65.0, 33.0 ] } },
