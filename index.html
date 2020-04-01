@@ -1,87 +1,143 @@
 <!DOCTYPE html>
 <html>
+<title>W3.CSS Template</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Helvetica">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    
+<!-- CSS Styling -->
+<style>
+    html,body,h1,h2,h3,h4,h5 {
+        font-family: "Helvetica";
+    }
+    #map {
+        position: inherit;
+        width: 80%;
+        height: 540px;
+        margin: 10px auto;
+        border-radius: 10px;
+        box-shadow: .4px #F3F3F3;
+        z-index:5;
+    }
+</style>
+    
+<body class="w3-black">
 
-<head>
-    <meta charset=utf-8 />
-    <title>COVID-19 Visualization</title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
-    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <!-- Top container -->
+    <div class="w3-bar w3-top w3-dark-gray w3-large" style="z-index:4 pad">
+        <h1><center>Coronavirus COVID-19</center></h1>
+    </div>
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-image: linear-gradient(to bottom right, #303030, #100F0F);
-            font-family: Lato, sans-serif;
-            color: #0D0000;
-        }
-        header {
-            padding: 6px 10%;
-        }
-        h1 {
-            display: inline-block;
-            margin-right: 20px;
-            color: #DBC5C5;
-        }
-        h2 {
-            display: inline-block;
-            color: #DBC5C5;
-        }
-        #map {
-            width: 80%;
-            height: 540px;
-            margin: 10px auto;
-            border-radius: 10px;
-            box-shadow: .4px #F3F3F3;
-        }
-        footer {
-            padding: 6px 10%;
-            width: 80%;
-        }
-        p {
-            font-size: 1em;
-            color: #DBC5C5;
-        }
-        cou {
-            font-size: 0.9em;
-            margin: 10px auto;
-        }
-        b {
-            font-size: 1.2em;
-            text-align: center;
-        }
-        
-    </style>
-</head>
+    <!-- !PAGE CONTENT! -->
+    <div class="w3-main" style="margin-left:30px;margin-right:30px;margin-top:85px;">
+  
+        <!-- Header --> 
+        <div class="w3-row-padding w3-margin-bottom">
+            <div class="w3-quarter w3-round-small" >
+                <div class="w3-container w3-dark-gray w3-text-white w3-padding-16">
+                    <div class="w3-center">
+                        <h3>Total Cases</h3>
+                    </div>
+                    <div class="w3-clear"></div>
+                    <h4><span id='totalCases'></span></h4>
+                </div>
+            </div>
+            <div class="w3-quarter">
+                <div class="w3-container w3-dark-gray w3-text-white w3-padding-16">
+                    <div class="w3-center">
+                        <h3>Total Deaths</h3>
+                    </div>
+                    <div class="w3-clear"></div>
+                    <h4><span id='totalDeaths'></span></h4>
+                </div>
+            </div>
+            <div class="w3-quarter">
+                <div class="w3-container w3-dark-gray w3-text-white w3-padding-16">
+                    <div class="w3-center">
+                        <h3>Total Recoveries</h3>
+                    </div>
+                    <div class="w3-clear"></div>
+                    <h4><span id='totalRecover'></span></h4>
+                </div>
+            </div>
+            <div class="w3-quarter">
+                <div class="w3-container w3-dark-gray w3-text-white w3-padding-16">
+                    <div class="w3-center">
+                        <h3># of Countries</h3>
+                    </div>
+                    <div class="w3-clear"></div>
+                    <h4><span id='numOfCountries'></span></h4>
+                </div>
+            </div>
+        </div>
 
-<body>
-    <header>
-        <h1>Corona Virus</h1>
-        <h2>Cases, Deaths, and Recoveries</h2>
-    </header>
+        <div class="w3-panel">
+            <div class="w3-row-padding" style="margin:0 -16px">
+                <div style='text-align: center'>
+                    <h2>Global Cases</h2> 
+                </div>
+                    
+                <div id='map'></div>
+  
+                <div class="w3-container">
+                    <h5>Most Affected Countries</h5>
+                    <table class="w3-table w3-striped w3-bordered w3-border w3-hoverable w3-white">
+                        <tr>
+                            <td><span id='0'></span></td>
+                            <td><span id='0cases'></span></td>
+                        </tr>
+                        <tr>
+                            <td><span id='1'></span></td>
+                            <td><span id='1cases'></span></td>
+                        </tr>
+                        <tr>
+                            <td><span id='2'></span></td>
+                            <td><span id='2cases'></span></td>
+                        </tr>
+                        <tr>
+                            <td><span id='3'></span></td>
+                            <td><span id='3cases'></span></td>
+                        </tr>
+                        <tr>
+                            <td><span id='4'></span></td>
+                            <td><span id='4cases'></span></td>
+                        </tr>
+                        <tr>
+                            <td><span id='5'></span></td>
+                            <td><span id='5cases'></span></td>
+                        </tr>
+                    </table><br>
+  
+                </div>
+                <!-- End page content -->
+            </div>
+        </div>
+    </div>
 
-    <div id='map'></div>
-
-    <footer>
-        <p>The most COVID-19 cases are in <span id='MostCases'></span> with <span id='MostCasesNum'></span><br><br>For countries with 200+ cases</p>
-        <p>The highest death rate is in <span id='highDeathRate'></span> (<span id='dRnum'></span>%)<br>The highest recovery rate is in <span id = 'highRecoverRate'></span> (<span id = 'rRnum'></span> %)</p>
-    </footer>
-
-    <script src="output.json"></script>
+    <script src='output.json'></script>
+    <script src='maxTest.json'></script>
     <script>
         var map = L.map('map', {
-            center: [0,0],
+            center: [22.283467, -1.893034],
             zoom: 2,
-        });   
+            minZoom: 2,
+            maxZoom: 10,
+            maxBounds: [[-70, -180], [90, 180]],
+            scrollWheelZoom: false
+        });
 
         var tiles = L.tileLayer('https://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey={apikey}', {
             attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             apikey: '9539d2d7fbfb4607bdfb3a305668dd3b',
-            maxZoom: 22
+            maxZoom: 22   
         });    
         tiles.addTo(map);
+        
+                
         L.geoJson(corona, {
             pointToLayer: function(feature,latlng) {
                 console.log(feature.properties)
@@ -90,8 +146,19 @@
                     weight: 2,
                     fillColor: 'yellow',
                     fillOpacity: .5,
-                    radius: getRadius(feature.properties.number_of_cases),
+                    radius: getRadius(feature.properties.Confirmed),
                 });
+            },
+            filter: function(feature, layer) {
+                if (feature.properties.Country_Region == 'US' && feature.properties.Confirmed > 100 ) {
+                    return feature;
+                }
+                else if (feature.properties.Country_Region != 'US'){      
+                    return feature;
+                } else {
+                    // pass
+                }
+              
             },
             onEachFeature : function(feature,layer) {
                 layer.on('mouseover', function() {
@@ -104,65 +171,54 @@
                         fillColor: 'yellow'
                     });
                 });
-                if (feature.properties['Province/State'] == undefined) {
-                    var name = numberWithCommas(feature.properties['Country/Region'])
+                if (feature.properties['Province_State'] == undefined) {
+                    var name = feature.properties['Country_Region']
                 }
-                else if (feature.properties['Country/Region'] != 'US') {
-                    var name = `${feature.properties['Province/State']},<br>${feature.properties['Country/Region']}`
-                    name = numberWithCommas(name)
+                else if (feature.properties['Country_Region'] == 'US') {
+                    var name = `${feature.properties['Admin2']},<br>${feature.properties['Province_State']}`
                 }
                 else {
-                    var name = feature.properties['Province/State']
+                    var name = `${feature.properties['Province_State']},<br>${feature.properties['Country_Region']}`
                 }
-                var cases = numberWithCommas(feature.properties['number_of_cases'])
-                var deaths = numberWithCommas(feature.properties['number_of_deaths'])
-                var recover = numberWithCommas(feature.properties['number_of_recovered']) 
+                var cases = numberWithCommas(feature.properties['Confirmed'])
+                var deaths = numberWithCommas(feature.properties['Deaths'])
+                var recover = numberWithCommas(feature.properties['Recovered']) 
                 var popup = (`<b>${name}</b><br><cou>${cases} cases<br>${deaths} deaths<br>${recover} recovered</cou>`)
                 layer.bindPopup(popup)
             }
         }).addTo(map);
         
         map.attributionControl.addAttribution('COVID data - <a href="https://disasterresponse.maps.arcgis.com/">ESRI</a>');
-
         
-        let countryCases = []
-        let countryDeathRate = []
-        let countryRecover =[]
-        for (i=0; corona.features.length > i; i++) {
-            countryCases.push(corona.features[i].properties.number_of_cases);
-           if (corona.features[i].properties.number_of_cases < 200) {
-               countryDeathRate.push(0)
-           } else {
-               countryDeathRate.push(corona.features[i].properties.number_of_deaths/corona.features[i].properties.number_of_cases);
-           }
-           if (corona.features[i].properties.number_of_cases < 200) {
-               countryRecover.push(0)
-           } else {
-               countryRecover.push(corona.features[i].properties.number_of_recovered/corona.features[i].properties.number_of_cases);
-           }
-        }
+        document.getElementById("0").innerHTML = maxCases['Country_Region'][0]
+        document.getElementById("1").innerHTML = maxCases['Country_Region'][1]
+        document.getElementById("2").innerHTML = maxCases['Country_Region'][2]
+        document.getElementById("3").innerHTML = maxCases['Country_Region'][3]
+        document.getElementById("4").innerHTML = maxCases['Country_Region'][4]
+        document.getElementById("5").innerHTML = maxCases['Country_Region'][5]
         
-        let mostCases = indexOfMax(countryCases)
-        let highDeathRate = indexOfMax(countryDeathRate)
-        let highRecoverRate = indexOfMax(countryRecover)
+        document.getElementById("0cases").innerHTML = numberWithCommas(maxCases['Confirmed'][0]) + ' cases'
+        document.getElementById("1cases").innerHTML = numberWithCommas(maxCases['Confirmed'][1]) + ' cases'
+        document.getElementById("2cases").innerHTML = numberWithCommas(maxCases['Confirmed'][2]) + ' cases'
+        document.getElementById("3cases").innerHTML = numberWithCommas(maxCases['Confirmed'][3]) + ' cases'
+        document.getElementById("4cases").innerHTML = numberWithCommas(maxCases['Confirmed'][4]) + ' cases'
+        document.getElementById("5cases").innerHTML = numberWithCommas(maxCases['Confirmed'][5]) + ' cases'
+        
+        document.getElementById("totalCases").innerHTML = numberWithCommas(Object.values(maxCases.Confirmed).reduce(function(a,b) {return a + b}, 0))
+        
+        document.getElementById("totalDeaths").innerHTML = numberWithCommas(Object.values(maxCases.Deaths).reduce(function(a,b) {return a + b}, 0))
+        
+        document.getElementById("totalRecover").innerHTML = numberWithCommas(Object.values(maxCases.Recovered).reduce(function(a,b) {return a + b}, 0))
+        
+        document.getElementById("numOfCountries").innerHTML =Object.keys(maxCases.Confirmed).length
         
         
-        document.getElementById("MostCases").innerHTML = corona.features[mostCases].properties['Province/State']
-        document.getElementById("MostCasesNum").innerHTML = numberWithCommas(corona.features[mostCases].properties['number_of_cases'])
         
-        document.getElementById("highDeathRate").innerHTML = corona.features[highDeathRate].properties['Country/Region']
-        document.getElementById("dRnum").innerHTML = (countryDeathRate[highDeathRate]*100).toFixed(2)
-        
-        document.getElementById("highRecoverRate").innerHTML = corona.features[highRecoverRate].properties['Province/State']
-        document.getElementById("rRnum").innerHTML = (countryRecover[highRecoverRate]*100).toFixed(2)
-
-
-        //this function is  pulling the infromation from the pointToLayer option. to get the area of the circle radius       
+       
+        // Functions
         function getRadius(amount){
-            //a mathmatical equation for radius
             var radius = Math.sqrt(amount/Math.PI);
-            //returning the radius by utilizing the area of the circile formual above
-            return radius *.6 
+            return radius *.2
         }
         
         function numberWithCommas(x) {
@@ -183,9 +239,44 @@
             }
             return maxIndex;
         }
-          
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // Get the Sidebar
+        var mySidebar = document.getElementById("mySidebar");
+
+        // Get the DIV with overlay effect
+        var overlayBg = document.getElementById("myOverlay");
+
+        // Toggle between showing and hiding the sidebar, and add overlay effect
+        function w3_open() {
+          if (mySidebar.style.display === 'block') {
+            mySidebar.style.display = 'none';
+            overlayBg.style.display = "none";
+          } else {
+            mySidebar.style.display = 'block';
+            overlayBg.style.display = "block";
+          }
+        }
+
+        // Close the sidebar with the close button
+        function w3_close() {
+          mySidebar.style.display = "none";
+          overlayBg.style.display = "none";
+        }
+        
+        
     </script>
     
-</body>
 
+
+</body>
 </html>

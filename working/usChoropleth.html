@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+	<title>Choropleth Tutorial - Leaflet</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+
+
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		#map {
+			width: 600px;
+			height: 400px;
+		}
+	</style>
+
+	<style>
+        /* CSS */
+        /* Map dimentions*/
+        #map { 
+            width: 800px; 
+            height: 500px; 
+        }
+        
+        /* Leaflet control box for displaying population density */
+        .info { 
+            padding: 6px 8px; 
+            font: 14px/16px Arial, Helvetica, sans-serif; 
+            background: black; 
+            background: rgba(255,255,255,0.8); 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+            border-radius: 5px;
+        }
+        
+        /* Within the leaflet control box changing font for 'US Population Density' string */
+        .info h4 { 
+            margin: 0 0 5px;
+            color: #777;
+        }
+        
+        /* controlling legend box dimensions and color */
+        .legend { 
+            text-align: left; 
+            line-height: 18px; 
+            color: #555; } 
+        
+        /* font for each legend item...both color and string*/
+        .legend i { 
+            width: 18px; 
+            height: 18px; 
+            float: left;
+            margin-right: 8px; 
+            opacity: 0.7; 
+        }
+    </style>
+    
+</head>
+<body>
+    <!-- the map container -->
+    <div id='map'></div>
+
+    <!--sourcing the associated geojson file...the data! -->
+    <script type="text/javascript" src="usStatesCorona.json"></script>
+    <script type="text/javascript">
+        
+        // Setting the map object to fill the map container
+        // Choosing a center point and zoom level
+        var map = L.map('map').setView([37.8, -96], 4);
+
+        // Adding a basemap
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            id: 'mapbox/light-v9',
+            tileSize: 512,
+            zoomOffset: -1
+        }).addTo(map);
+
+
+        // control that shows state info on hover
+        // L.control allows you to create things like legends, info boxes, etc...
+        var info = L.control();
+
+        // L.control() has preset methods and .onAdd is one of them
+        info.onAdd = function (map) {
+            // accessing the document object model...accessed the .info css to create info box
+            this._div = L.DomUtil.create('div', 'info');
+            // this function is defined below...updates info box with geojson information
+            this.update();
+            // when function is called, this is what get's returned. 
+            return this._div;
+        };
+
+        // THis method is called in the above onAdd method. props is the parameter passed trhough the function
+        info.update = function (props) {
+            // html string is displayed in info box.
+            // shorthand conditional statement (? :) used to either display geojson info.. or 'Hover over a state' string.
+            // info.update is always called, but geojson data isn't always accessed...see below for how geojson data is accessed.
+            this._div.innerHTML = '<h4>US Corona Cases</h4>' +  (props ?
+                '<b>' + props.Province_State + '</b><br />' + props.Confirmed + ' people / mi<sup>2</sup>'
+                : 'Hover over a state');
+        };
+
+        // Adds info box to the map... order is important heere.
+        info.addTo(map);
+
+
+        // get color depending on population density value
+        // shorthand conditional statement is used
+        // color for each state in the USA depending on population density
+        function getColor(d) {
+            // if population density is greater than a 1000, #800026 color is returned for the state
+            return d > 1000 ? '#800026' :
+            // if population is greater than 500, #BD0026 is returned
+            d > 500  ? '#BD0026' :
+            d > 200  ? '#E31A1C' :
+            d > 100  ? '#FC4E2A' :
+            d > 50   ? '#FD8D3C' :
+            d > 20   ? '#FEB24C' :
+            d > 10   ? '#FED976' :
+            // if d is not greater than 10, #FFEDA0 is returned... this is the else statement.
+            '#FFEDA0';
+        }
+
+        // this is teh first property of the geojson object 'style: style'. This is a function with one parameter being passed through
+        // All states will have the same properties except fillColor property which is determined by the getColor function
+        function style(feature) {
+            return {
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7,
+                // defined getColor above..the arguments passed through are the density of each state in the USA
+                // feature is statesData.features[i].. each state has multiple properties. One is density.
+                fillColor: getColor(feature.properties.Confirmed)
+            };
+        }
+
+        // This is an important function because is communicates the geojson data into the info box
+        // Below in the onEachFeature function, if mouseover is over the geojson, this function grabs the geojson data
+        // if the mouseover is not above the geojson data, it still calls the info.update, but used the else statement to display 'HOver over state'
+        function highlightFeature(e) {
+            var layer = e.target;
+
+            // sets the style of the feature passed through on the mouseover
+            layer.setStyle({
+                weight: 5,
+                color: '#666',
+                dashArray: '',
+                fillOpacity: 1,
+            });
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront();
+            }
+
+            // Updates the info box
+            info.update(layer.feature.properties);
+        }
+
+        // Declaring geojson object
+        var geojson;
+
+        // on mouseout, resets the style to the defaults
+        function resetHighlight(e) {
+            geojson.resetStyle(e.target);
+            info.update();
+        }
+
+        // if user clicks on a feature, this function forces a zoom to the state object selected
+        function zoomToFeature(e) {
+            // getBounds returns bounding box of object selected. fitBounds updates the map to the zoom of bounding box.
+            map.fitBounds(e.target.getBounds());
+        }
+
+        // this function is the second property of the geojson object (onEachFeature: onEachFeature)
+        // this function houses the other functions defined above.
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+
+        //L.geojson takes two arguments. statesData is the variable defined in the us-states geojson file. Next is an object that contains the style and onEachFeature properties.
+        geojson = L.geoJson(usStates, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map);
+
+        // Adds metadata and references to the bottom of the map div object.
+        map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
+        
+        // calling L.control again but for the legend this time
+        // the info box utilized the default options, but for the legend, we updated the position property to display in the 'bottomright' of the map
+        var legend = L.control({position: 'bottomright'});
+
+        // calling the the onAdd method to create the container for the legend
+        legend.onAdd = function (map) {
+            // predefining the breaks in the legend
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+                // empty array that will be filled with the push method below
+                labels = [],
+                // declaring blank variable
+                from, 
+                // declaring blank variable
+                to;
+
+            // for loop to iterate through the grades defined above
+            for (var i = 0; i < grades.length; i++) {
+                from = grades[i];
+                to = grades[i + 1];
+                labels.push(
+                    // utilizing the css legend i class to format the strings associated with each grade break in the legend.
+                    // from represents the lower point and to represents the upper point of pop density.
+                    //&ndash must be the code for a '-'
+                    '<i style="background:' + getColor(from + 1) + '"></i> ' + from + (to ? '&ndash;' + to : '+')
+                );
+            }
+
+            //finalizing the legend by joining each grade with a line break...neatly stacks each legend item on top of eachother.
+            div.innerHTML = labels.join('<br>');
+            return div;
+        };
+
+        legend.addTo(map);
+
+    </script>
+
+
+
+</body>
+</html>

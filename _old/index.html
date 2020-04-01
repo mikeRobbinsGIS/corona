@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>COVID-19 Visualization</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Helvetica' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: linear-gradient(to bottom right, #303030, #100F0F);
+            font-family: Helvetica, sans-serif;
+            color: #0D0000;
+        }
+        header {
+            padding: 6px 10%;
+        }
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #DBC5C5;
+            font-family: "Helvetica", sans-serif;
+        }
+        h2 {
+            display: inline-block;
+            color: #DBC5C5;
+            font-family: "Helvetica", sans-serif;
+        }
+        #map {
+            width: 80%;
+            height: 540px;
+            margin: 10px auto;
+            border-radius: 10px;
+            box-shadow: .4px #F3F3F3;
+        }
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+            font-family: "Helvetica", sans-serif;
+        }
+        p {
+            font-size: 1em;
+            color: #DBC5C5;
+            font-family: "Helvetica", sans-serif;
+        }
+        cou {
+            font-size: 0.9em;
+            margin: 10px auto;
+            font-family: "Helvetica", sans-serif;
+        }
+        b {
+            font-size: 1.2em;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Corona Virus</h1>
+        <h2>Cases, Deaths, and Recoveries</h2>
+    </header>
+
+    <div id='map'></div>
+    <iframe src="coronaTable.html" name="targetframe" allowTransparency="true" frameborder="100" width="1000" height="1000" align="center"></iframe>
+
+    <footer>
+        <p>The most COVID-19 cases are in <span id='MostCases'></span> with <span id='MostCasesNum'></span><br><br>For countries with 200+ cases</p>
+        <p>The highest death rate is in <span id='highDeathRate'></span> (<span id='dRnum'></span>%)<br>The highest recovery rate is in <span id = 'highRecoverRate'></span> (<span id = 'rRnum'></span> %)</p>
+    </footer>
+
+    <script src="output.json"></script>
+    <script>
+        var map = L.map('map', {
+            center: [0,0],
+            zoom: 2,
+        });   
+
+        var tiles = L.tileLayer('https://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey={apikey}', {
+            attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            apikey: '9539d2d7fbfb4607bdfb3a305668dd3b',
+            maxZoom: 22
+        });    
+        tiles.addTo(map);
+        L.geoJson(corona, {
+            pointToLayer: function(feature,latlng) {
+                console.log(feature.properties)
+                return L.circleMarker(latlng, {
+                    color: 'orange',
+                    weight: 2,
+                    fillColor: 'yellow',
+                    fillOpacity: .5,
+                    radius: getRadius(feature.properties.number_of_cases),
+                });
+            },
+            onEachFeature : function(feature,layer) {
+                layer.on('mouseover', function() {
+                    layer.setStyle({
+                        fillColor: 'red'
+                    });
+                });
+                layer.on('mouseout', function() {
+                    layer.setStyle({
+                        fillColor: 'yellow'
+                    });
+                });
+                if (feature.properties['Province/State'] == undefined) {
+                    var name = feature.properties['Country/Region']
+                }
+                else {
+                    var name = `${feature.properties['Province/State']},<br>${feature.properties['Country/Region']}`
+                }
+                var cases = numberWithCommas(feature.properties['number_of_cases'])
+                var deaths = numberWithCommas(feature.properties['number_of_deaths'])
+                var recover = numberWithCommas(feature.properties['number_of_recovered']) 
+                var popup = (`<b>${name}</b><br><cou>${cases} cases<br>${deaths} deaths<br>${recover} recovered</cou>`)
+                layer.bindPopup(popup)
+            }
+        }).addTo(map);
+        
+        map.attributionControl.addAttribution('COVID data - <a href="https://disasterresponse.maps.arcgis.com/">ESRI</a>');
+
+        
+        let countryCases = []
+        let countryDeathRate = []
+        let countryRecover =[]
+        for (i=0; corona.features.length > i; i++) {
+            countryCases.push(corona.features[i].properties.number_of_cases);
+           if (corona.features[i].properties.number_of_cases < 200) {
+               countryDeathRate.push(0)
+           } else {
+               countryDeathRate.push(corona.features[i].properties.number_of_deaths/corona.features[i].properties.number_of_cases);
+           }
+           if (corona.features[i].properties.number_of_cases < 200) {
+               countryRecover.push(0)
+           } else {
+               countryRecover.push(corona.features[i].properties.number_of_recovered/corona.features[i].properties.number_of_cases);
+           }
+        }
+        
+        let mostCases = indexOfMax(countryCases)
+        let highDeathRate = indexOfMax(countryDeathRate)
+        let highRecoverRate = indexOfMax(countryRecover)
+        
+        
+        document.getElementById("MostCases").innerHTML = corona.features[mostCases].properties['Province/State']
+        document.getElementById("MostCasesNum").innerHTML = numberWithCommas(corona.features[mostCases].properties['number_of_cases'])
+        
+        document.getElementById("highDeathRate").innerHTML = corona.features[highDeathRate].properties['Country/Region']
+        document.getElementById("dRnum").innerHTML = (countryDeathRate[highDeathRate]*100).toFixed(2)
+        
+        document.getElementById("highRecoverRate").innerHTML = corona.features[highRecoverRate].properties['Province/State']
+        document.getElementById("rRnum").innerHTML = (countryRecover[highRecoverRate]*100).toFixed(2)
+
+
+        //this function is  pulling the infromation from the pointToLayer option. to get the area of the circle radius       
+        function getRadius(amount){
+            //a mathmatical equation for radius
+            var radius = Math.sqrt(amount/Math.PI);
+            //returning the radius by utilizing the area of the circile formual above
+            return radius *.6 
+        }
+        
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        function indexOfMax(arr) {
+            if (arr.length === 0) {
+                return -1;
+            }
+            var max = arr[0];
+            var maxIndex = 0;
+            for (var i = 1; i < arr.length; i++) {
+                if (arr[i] > max) {
+                    maxIndex = i;
+                    max = arr[i];
+                }
+            }
+            return maxIndex;
+        }
+          
+    </script>
+    
+</body>
+
+</html>
