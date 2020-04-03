@@ -11,8 +11,15 @@
     
 <!-- CSS Styling -->
 <style>
-    html,body,h1,h2,h3,h4,h5 {
+    html,body {
         font-family: "Helvetica";
+    }
+    h1 {
+        display: inline-block;
+    }
+    h2,h3,h4,h5 {
+        display: inline-block;
+        margin-right: 50px;
     }
     #map {
         position: inherit;
@@ -28,8 +35,9 @@
 <body class="w3-black">
 
     <!-- Top container -->
-    <div class="w3-bar w3-top w3-dark-gray w3-large" style="z-index:4 pad">
-        <h1><center>Coronavirus COVID-19</center></h1>
+    <div class="w3-bar w3-top w3-dark-gray w3-large" style="z-index:4 pad; text-align: center">
+        <h1>Coronavirus COVID-19</h1>
+        <h4>...data as of: <span id='update'></span></h4>
     </div>
 
     <!-- !PAGE CONTENT! -->
@@ -188,7 +196,7 @@
             }
         }).addTo(map);
         
-        map.attributionControl.addAttribution('COVID data - <a href="https://disasterresponse.maps.arcgis.com/">ESRI</a>');
+        map.attributionControl.addAttribution('COVID data - <a href="https://github.com/CSSEGISandData/COVID-19">John Hopkins</a>');
         
         document.getElementById("0").innerHTML = maxCases['Country_Region'][0]
         document.getElementById("1").innerHTML = maxCases['Country_Region'][1]
@@ -211,6 +219,7 @@
         document.getElementById("totalRecover").innerHTML = numberWithCommas(Object.values(maxCases.Recovered).reduce(function(a,b) {return a + b}, 0))
         
         document.getElementById("numOfCountries").innerHTML =Object.keys(maxCases.Confirmed).length
+        document.getElementById('update').innerHTML = corona.features[0].properties.Last_Update
         
         
         

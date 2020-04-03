@@ -5,7 +5,7 @@ import numpy as np
 
 # Grabbing data
 os.chdir(r'C:\coronaMaps')
-csv = r"C:\coronaMaps\johnHopRepo\COVID-19-master\COVID-19-master\csse_covid_19_data\csse_covid_19_daily_reports\03-31-2020.csv"
+csv = r"C:\coronaMaps\johnHopRepo\COVID-19-master\COVID-19-master\csse_covid_19_data\csse_covid_19_daily_reports\04-02-2020.csv"
 df = pd.read_csv(csv)
 
 # Cleaning Data
